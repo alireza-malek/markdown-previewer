@@ -1,4 +1,6 @@
-const VERSION = 'md-prev-v1';
+const APP_NAME = 'mdp';
+const VERSION = 'v1.0.0';
+const CACHE_NAME = `${APP_NAME}-${VERSION}`;
 
 self.addEventListener('install', (event) => {
   const base = new URL(self.registration.scope).pathname; // e.g. "/markdown-previewer/" or "/"
@@ -8,14 +10,14 @@ self.addEventListener('install', (event) => {
     base + 'markdown-previewer.html',
     base + 'manifest.webmanifest'
   ];
-  event.waitUntil(caches.open(VERSION).then(c => c.addAll(urlsToCache)));
+  event.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k === VERSION ? null : caches.delete(k))))
+      Promise.all(keys.map(k => (k === CACHE_NAME ? null : caches.delete(k))))
     )
   );
   self.clients.claim();
@@ -28,7 +30,7 @@ self.addEventListener('fetch', (event) => {
       if (resp) return resp;
       return fetch(event.request).then((net) => {
         const copy = net.clone();
-        caches.open(VERSION).then(c => { try { c.put(event.request, copy); } catch (_) { } });
+        caches.open(CACHE_NAME).then(c => { try { c.put(event.request, copy); } catch (_) { } });
         return net;
       }).catch(() => {
         const base = new URL(self.registration.scope).pathname;

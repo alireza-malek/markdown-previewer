@@ -154,7 +154,8 @@
         /* Font Families */
         --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        --font-mono: "Courier New", Courier, monospace;
+        --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas,
+          "Liberation Mono", monospace;
         --font-rtl: "Vazirmatn", sans-serif;
 
         /* Z-index */
@@ -276,17 +277,18 @@
         opacity: 0;
         transform: scale(0.7) translateX(25px);
         pointer-events: none;
-        width: 0;
+        max-width: 0;
         padding-left: 0;
         padding-right: 0;
         overflow: hidden;
+        transition: all var(--transition-normal);
       }
 
       .manual-save-btn-split.visible {
         opacity: 1;
         transform: scale(1) translateX(0);
         pointer-events: auto;
-        width: auto;
+        max-width: 40px; /* Approximate width of the button */
         padding: var(--spacing-sm);
       }
 
@@ -1331,6 +1333,7 @@
         font-size: 0.95rem;
         line-height: 1.5;
         margin-bottom: 12px;
+        white-space: pre-line;
       }
 
       .mini-modal-actions {
@@ -1521,7 +1524,7 @@
 
       .share-tooltip {
         position: absolute;
-        display: none;
+        visibility: hidden;
         top: calc(100% + var(--spacing-sm));
         right: -56px;
         flex-direction: column;
@@ -1533,15 +1536,15 @@
         box-shadow: var(--shadow-md);
         z-index: 5000;
         transition: transform var(--transition-fast),
-          opacity var(--transition-fast);
+          opacity var(--transition-fast), visibility var(--transition-fast);
         transform: translateY(-3px);
         opacity: 0;
         max-width: min(430px, calc(100vw - 12px));
       }
 
       .share-tooltip.is-visible {
+        visibility: visible;
         transform: translateY(0);
-        display: flex;
         opacity: 1;
       }
 
@@ -1573,7 +1576,8 @@
         color: var(--color-text);
         direction: ltr;
         unicode-bidi: plaintext;
-        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas,
+          "Liberation Mono", monospace;
         font-weight: 200;
         letter-spacing: -0.034em;
         white-space: nowrap;
@@ -1851,9 +1855,42 @@
   </head>
   <body class="theme-light">
     <script>
+      // ========================================
+      // CONFIGURATION
+      // ========================================
+      const CONFIG = {
+        AUTOSAVE_DEBOUNCE_DELAY: 300, // ms
+        MAX_DOCUMENTS: 4,
+        ICON_ANIMATION_DURATION: 500, // ms
+        SAVE_FEEDBACK_DURATION: 1000, // ms
+        RTL_THRESHOLD: 0.3, // Minimum RTL character ratio to trigger RTL layout
+      };
+
+      const STORAGE_KEYS = {
+        DOCUMENT: (docId) => `mdp_doc_${docId}`,
+        AUTOSAVE: (docId) => `mdp_docAutosave_${docId}`,
+        CURRENT_DOC_ID: "mdp_currentDocumentId",
+        VISIBLE_DOCS: "mdp_visibleDocuments",
+        DOCS_COLLAPSED: "mdp_docsCollapsed",
+        THEME: "mdp_darkTheme",
+        EDITOR_WIDTH: "mdp_editorWidth",
+        PREVIEW_WIDTH: "mdp_previewWidth",
+      };
+
+      const ICONS = {
+        SYNCED: "#icon-synced",
+        UNSYNCED: "#icon-unsynced",
+        CHECK: "#icon-check",
+        SAVE: "#icon-save",
+        SUN: "#icon-sun",
+        MOON: "#icon-moon",
+        COPY: "#icon-copy",
+        SHARE: "#icon-share",
+      };
+
       // Apply theme immediately before page renders to prevent FOUC
       (function () {
-        const savedTheme = localStorage.getItem("markdownTheme");
+        const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
         let isDark;
 
         if (savedTheme !== null) {
@@ -2496,38 +2533,6 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // ========================================
-        // CONFIGURATION
-        // ========================================
-        const CONFIG = {
-          AUTOSAVE_DEBOUNCE_DELAY: 300, // ms
-          MAX_DOCUMENTS: 4,
-          ICON_ANIMATION_DURATION: 500, // ms
-          SAVE_FEEDBACK_DURATION: 1000, // ms
-        };
-
-        const STORAGE_KEYS = {
-          DOCUMENT: "markdownDoc",
-          AUTOSAVE: "_autosave",
-          CURRENT_DOC_ID: "currentDocumentId",
-          VISIBLE_DOCS: "visibleDocuments",
-          DOCS_COLLAPSED: "docsCollapsed",
-          THEME: "markdownTheme",
-          EDITOR_WIDTH: "markdownEditorWidth",
-          PREVIEW_WIDTH: "markdownPreviewWidth",
-        };
-
-        const ICONS = {
-          SYNCED: "#icon-synced",
-          UNSYNCED: "#icon-unsynced",
-          CHECK: "#icon-check",
-          SAVE: "#icon-save",
-          SUN: "#icon-sun",
-          MOON: "#icon-moon",
-          COPY: "#icon-copy",
-          SHARE: "#icon-share",
-        };
-
         // RTL detection regex - cached for performance
         const RTL_REGEX =
           /[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
@@ -2636,10 +2641,6 @@
           miniModal.setAttribute("aria-hidden", "true");
         }
 
-        function showAlert(message) {
-          return showToast(message);
-        }
-
         function showConfirm(
           message,
           { title = "", confirmText = "OK", cancelText = "Cancel" } = {}
@@ -2655,7 +2656,7 @@
         // ========================================
         // TOASTS
         // ========================================
-        function showToast(message, durationMs = 7000) {
+        function showToast(message, durationMs = 6000) {
           return new Promise((resolve) => {
             const toast = document.createElement("div");
             toast.className = "mini-toast";
@@ -2736,12 +2737,13 @@
             resizer.classList.add("active");
 
             initialX = e.clientX;
-            initialEditorFlex = parseFloat(
-              getComputedStyle(editorPanel).flexGrow
-            );
-            initialPreviewFlex = parseFloat(
-              getComputedStyle(previewPanel).flexGrow
-            );
+            // Get the flex property directly instead of flexGrow for better cross-browser compatibility
+            const editorFlex = getComputedStyle(editorPanel).flex;
+            const previewFlex = getComputedStyle(previewPanel).flex;
+
+            // Parse flex values - handle cases where flex might be "1 1 0%" or just "1"
+            initialEditorFlex = parseFloat(editorFlex.split(" ")[0] || "1");
+            initialPreviewFlex = parseFloat(previewFlex.split(" ")[0] || "1");
 
             document.addEventListener("mousemove", resize);
             document.addEventListener("mouseup", stopResize);
@@ -2760,6 +2762,16 @@
 
             let newEditorFlex = Math.max(0.1, initialEditorFlex + flexDelta);
             let newPreviewFlex = Math.max(0.1, initialPreviewFlex - flexDelta);
+
+            // Auto-snap to center when close to 50/50 split
+            const centerThreshold = 0.03; // Snap when within 3% of center
+            if (
+              Math.abs(newEditorFlex - 1) < centerThreshold &&
+              Math.abs(newPreviewFlex - 1) < centerThreshold
+            ) {
+              newEditorFlex = 1;
+              newPreviewFlex = 1;
+            }
 
             editorPanel.style.flex = newEditorFlex;
             previewPanel.style.flex = newPreviewFlex;
@@ -2791,7 +2803,21 @@
         // RTL DETECTION
         // ========================================
         function isRTL(text) {
-          return RTL_REGEX.test(text);
+          if (!text || typeof text !== "string") return false;
+
+          const totalChars = text.replace(/\s/g, "").length;
+          if (totalChars === 0) return false;
+
+          // Count RTL characters
+          let rtlCount = 0;
+          for (let i = 0; i < text.length; i++) {
+            if (RTL_REGEX.test(text[i])) {
+              rtlCount++;
+            }
+          }
+
+          // Only consider RTL if RTL characters exceed the threshold
+          return rtlCount / totalChars > CONFIG.RTL_THRESHOLD;
         }
 
         // Function to apply RTL detection to elements
@@ -2869,14 +2895,6 @@
         // ========================================
         // STORAGE HELPER FUNCTIONS
         // ========================================
-        function getDocumentKey(docId) {
-          return `${STORAGE_KEYS.DOCUMENT}${docId}`;
-        }
-
-        function getAutosaveKey(docId) {
-          return `${STORAGE_KEYS.DOCUMENT}${docId}${STORAGE_KEYS.AUTOSAVE}`;
-        }
-
         function getPreviewText(text, maxLines = 3) {
           const lines = text
             .split("\n")
@@ -2934,7 +2952,7 @@
         }
 
         function loadDocument(docId) {
-          const docData = localStorage.getItem(getDocumentKey(docId));
+          const docData = localStorage.getItem(STORAGE_KEYS.DOCUMENT(docId));
           if (docData) {
             try {
               const data = JSON.parse(docData);
@@ -2951,7 +2969,10 @@
             content: content,
             timestamp: new Date().toISOString(),
           };
-          localStorage.setItem(getDocumentKey(docId), JSON.stringify(data));
+          localStorage.setItem(
+            STORAGE_KEYS.DOCUMENT(docId),
+            JSON.stringify(data)
+          );
           updateDocumentDisplay(docId);
 
           // Update indicator if saving current doc
@@ -2961,12 +2982,15 @@
         }
 
         function isAutosaveEnabled(docId) {
-          const saved = localStorage.getItem(getAutosaveKey(docId));
+          const saved = localStorage.getItem(STORAGE_KEYS.AUTOSAVE(docId));
           return saved === null || saved === "true"; // Default to true
         }
 
         function setAutosaveEnabled(docId, enabled) {
-          localStorage.setItem(getAutosaveKey(docId), enabled.toString());
+          localStorage.setItem(
+            STORAGE_KEYS.AUTOSAVE(docId),
+            enabled.toString()
+          );
           updateCurrentDocIndicator();
         }
 
@@ -3158,7 +3182,7 @@
         function removeDocument(docId) {
           // Prevent removal of Document 1
           if (docId === 1) {
-            showAlert(
+            showToast(
               "Document 1 cannot be removed. It serves as the primary document."
             );
             return;
@@ -3170,8 +3194,8 @@
 
           if (isEmpty) {
             // Remove empty document without confirmation
-            localStorage.removeItem(getDocumentKey(docId));
-            localStorage.removeItem(getAutosaveKey(docId));
+            localStorage.removeItem(STORAGE_KEYS.DOCUMENT(docId));
+            localStorage.removeItem(STORAGE_KEYS.AUTOSAVE(docId));
 
             // Hide the document
             hideDocument(docId);
@@ -3196,8 +3220,8 @@
             ).then((proceed) => {
               if (!proceed) return;
               // Clear the document data from localStorage
-              localStorage.removeItem(getDocumentKey(docId));
-              localStorage.removeItem(getAutosaveKey(docId));
+              localStorage.removeItem(STORAGE_KEYS.DOCUMENT(docId));
+              localStorage.removeItem(STORAGE_KEYS.AUTOSAVE(docId));
 
               // Hide the document
               hideDocument(docId);
@@ -3295,23 +3319,14 @@
         // SHARE BY LINK FUNCTIONS
         // ========================================
         function compressContent(content) {
-          const payload = {
-            v: 1, // Version for future compatibility
-            content: content,
-            ts: new Date().toISOString(),
-          };
-          return LZString.compressToEncodedURIComponent(
-            JSON.stringify(payload)
-          );
+          return LZString.compressToEncodedURIComponent(content);
         }
 
         function decompressContent(compressed) {
           try {
-            const decompressed =
+            const content =
               LZString.decompressFromEncodedURIComponent(compressed);
-            if (!decompressed) return null;
-            const payload = JSON.parse(decompressed);
-            return payload;
+            return content ? { content } : null;
           } catch (e) {
             console.error("Failed to decompress content:", e);
             return null;
@@ -3321,7 +3336,7 @@
         function generateShareLink() {
           const content = markdownEditor.value;
           if (!content.trim()) {
-            showAlert("Cannot share an empty document.");
+            showToast("Cannot share an empty document.");
             return null;
           }
 
@@ -3379,7 +3394,7 @@
               return true;
             } else {
               // Invalid or corrupted data
-              showAlert(
+              showToast(
                 "Failed to load shared content. The link may be corrupted or invalid."
               );
               history.replaceState(null, "", window.location.pathname);
@@ -3426,7 +3441,7 @@
 
           // If still no slot available, warn user
           if (!targetDocId) {
-            showAlert(
+            showToast(
               `All ${CONFIG.MAX_DOCUMENTS} document slots are occupied. Please remove or clear a document first.`
             );
             return;
@@ -3442,7 +3457,7 @@
           switchToDocument(targetDocId);
 
           // Show success feedback
-          showAlert(`Content saved to Document ${targetDocId}`);
+          showToast(`Content saved to Document ${targetDocId}`);
 
           // Ensure header indicators are updated after saving
           updateCurrentDocIndicator();
@@ -3725,7 +3740,7 @@
           if (!("showSaveFilePicker" in window)) return false;
           try {
             const opts = {
-              suggestedName: `document-${currentDocumentId}.md`,
+              suggestedName: `Document_${currentDocumentId}.md`,
               types: [
                 {
                   description: "Markdown File",
@@ -3750,7 +3765,7 @@
           btnSaveMarkdown.addEventListener("click", async function () {
             const content = markdownEditor.value;
             if (!content.trim()) {
-              showAlert("Nothing to save. The document is empty.");
+              showToast("Nothing to save. The document is empty.");
               return;
             }
             await saveMarkdownViaPicker(content);
@@ -3840,6 +3855,7 @@
 
           currentShareUrl = url;
           shareLinkPreview.textContent = formatSharePreview(url);
+          shareLinkPreview.title = url;
 
           // Show/hide warning based on URL length
           const warningEl = document.getElementById("share-tooltip-warning");
@@ -3926,7 +3942,7 @@
               });
             } catch (err) {
               if (!(err && err.name === "AbortError")) {
-                showAlert(
+                showToast(
                   "Sharing was not completed. You can copy the link instead."
                 );
               }

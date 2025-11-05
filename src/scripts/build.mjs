@@ -46,33 +46,64 @@ async function readLocalText(rel, baseDir) {
 
 async function inlineCssAssets(cssText, cssUrlOrPath) {
   const base = cssUrlOrPath ? (cssUrlOrPath.startsWith('http') ? cssUrlOrPath : 'file://' + path.resolve(cssUrlOrPath)) : null;
-  const urlRe = /url\((['"]?)([^)'"]+)\1\)/g;
+  // Match url(...) with optional quotes, handling whitespace and protocol-relative URLs
+  const urlRe = /url\((['"]?)([^)'"]+?)\1\)/g;
   const seen = new Set();
-  const tasks = [];
+  const replacements = [];
 
   let m;
+  const matches = [];
   while ((m = urlRe.exec(cssText))) {
-    const raw = m[2];
+    matches.push(m);
+  }
+
+  for (const m of matches) {
+    const raw = m[2].trim();
     if (raw.startsWith('data:')) continue;
-    const key = m.index + '|' + raw;
+    const key = raw;
     if (seen.has(key)) continue;
     seen.add(key);
 
-    const absUrl = base ? toAbs(raw, base) : raw;
-    tasks.push((async () => {
+    // Resolve relative URLs against the CSS base URL
+    let absUrl = raw;
+    if (base) {
+      // Handle protocol-relative URLs (//fonts.gstatic.com/...)
+      if (raw.startsWith('//')) {
+        absUrl = new URL(base).protocol + raw;
+      } else {
+        absUrl = toAbs(raw, base);
+      }
+    }
+
+    replacements.push((async () => {
       try {
-        const bin = absUrl.startsWith('http') ? await fetchBin(absUrl) : await fetchBin(absUrl); // allow http(s) only
+        if (!absUrl.startsWith('http')) {
+          throw new Error(`Not an HTTP(S) URL: ${absUrl}`);
+        }
+        const bin = await fetchBin(absUrl);
         const b64 = bin.toString('base64');
         const mime = guessMime(absUrl);
         const replacement = `url(data:${mime};base64,${b64})`;
-        cssText = cssText.replace(m[0], replacement);
         console.log('  ✓ inlined asset', raw, '→', mime, `${(bin.length / 1024).toFixed(1)}KB`);
+        // Create a regex to match all occurrences of this URL pattern (with or without quotes)
+        const urlPattern = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special regex chars
+        const urlRegex = new RegExp(`url\\((['"]?)${urlPattern}\\1\\)`, 'g');
+        return { urlRegex, replacement, raw };
       } catch (e) {
-        console.warn('  ! warn: failed to inline', raw, e.message);
+        console.warn('  ! warn: failed to inline', raw, '→', absUrl, e.message);
+        return null;
       }
     })());
   }
-  await Promise.all(tasks);
+
+  const results = await Promise.all(replacements);
+  // Apply replacements in reverse order to preserve indices
+  for (const r of results.reverse()) {
+    if (r) {
+      // Replace all occurrences of this URL pattern
+      cssText = cssText.replace(r.urlRegex, r.replacement);
+    }
+  }
   return cssText;
 }
 
@@ -89,8 +120,22 @@ async function processHtml(html, baseDir) {
   });
 
   // 2) stylesheets: keep <link> but convert href → data:text/css;base64,...
-  const linkRe = /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*)>/gi;
-  html = await replaceAsync(html, linkRe, async (full, pre1, pre2, href, post) => {
+  // Match <link> tags with rel="stylesheet" and href, handling multi-line and attributes in any order
+  const linkRe = /<link\s+([\s\S]*?)(\/?)>/gi;
+  html = await replaceAsync(html, linkRe, async (full, attrs, selfClose) => {
+    // Check if this is a stylesheet link
+    const relMatch = attrs.match(/\brel\s*=\s*["']([^"']+)["']/i);
+    if (!relMatch || relMatch[1].toLowerCase() !== 'stylesheet') {
+      return full; // Not a stylesheet, skip
+    }
+
+    const hrefMatch = attrs.match(/\bhref\s*=\s*["']([^"']+)["']/i);
+    if (!hrefMatch) {
+      return full; // No href, skip
+    }
+
+    const href = hrefMatch[1];
+
     let css = isHttp(href) ? await fetchText(href) : await readLocalText(href, baseDir);
 
     // If this is Google Fonts CSS, embed font files referenced by url(...)
@@ -106,13 +151,15 @@ async function processHtml(html, baseDir) {
     const dataHref = `data:text/css;base64,${b64}`;
 
     // Preserve attributes except integrity/crossorigin/href value
-    const attrs = (pre1 + ' ' + pre2 + ' ' + post)
-      .replace(/\s(?:integrity|crossorigin)=["'][^"']*["']/gi, '')
-      .replace(/\shref=["'][^"']*["']/i, '')
+    const cleanAttrs = attrs
+      .replace(/\s*(?:integrity|crossorigin)\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/\s*rel\s*=\s*["']stylesheet["']/gi, '')
+      .replace(/\s*href\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/\s+/g, ' ')
       .trim();
 
     console.log('✓ inlined <link rel="stylesheet" href="...">', href, `(${css.length} chars)`);
-    return `<!-- inlined from ${href} -->\n<link rel="stylesheet"${attrs ? ' ' + attrs : ''} href="${dataHref}">`;
+    return `<!-- inlined from ${href} -->\n<link rel="stylesheet"${cleanAttrs ? ' ' + cleanAttrs : ''} href="${dataHref}">`;
   });
 
   // 3) remove preconnect/dns-prefetch (not useful offline)
