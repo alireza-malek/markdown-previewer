@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -152,10 +152,12 @@
         --shadow-primary-lg: 0 8px 25px rgba(91, 127, 217, 0.15);
 
         /* Font Families */
-        --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-        --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas,
-          "Liberation Mono", monospace;
+        --font-system:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        --font-mono:
+          ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
+          monospace;
         --font-rtl: "Vazirmatn", sans-serif;
 
         /* Z-index */
@@ -177,7 +179,8 @@
         color: var(--color-text);
         background-color: var(--color-bg);
         direction: ltr;
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -354,7 +357,8 @@
       }
 
       #btn-theme-toggle .icon-svg {
-        transition: transform var(--transition-theme),
+        transition:
+          transform var(--transition-theme),
           opacity var(--transition-theme);
       }
 
@@ -403,15 +407,68 @@
         position: relative;
       }
 
+      body.is-resizing {
+        user-select: none;
+        cursor: col-resize;
+      }
+
+      .editor-container #editor-panel,
+      .editor-container .resizer,
+      .editor-container #preview-panel {
+        transition:
+          flex 180ms ease,
+          max-width 180ms ease,
+          width 180ms ease,
+          opacity 180ms ease,
+          transform 180ms ease,
+          background-color var(--transition-theme),
+          color var(--transition-theme);
+      }
+
+      #editor-panel {
+        max-width: 100%;
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .editor-container.is-resizing #editor-panel,
+      .editor-container.is-resizing .resizer,
+      .editor-container.is-resizing #preview-panel {
+        transition: none !important;
+      }
+
+      .editor-container.read-mode #editor-panel {
+        flex: 0 0 0 !important;
+        min-width: 0 !important;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        transform: translateX(-8px);
+        pointer-events: none;
+      }
+
+      .editor-container.read-mode .resizer {
+        width: var(--spacing-sm);
+        opacity: 0.7;
+        pointer-events: auto;
+        transform: none;
+        margin-left: calc(-1 * var(--spacing-sm));
+      }
+
+      .editor-container.read-mode #preview-panel {
+        flex: 1 1 auto !important;
+      }
+
       .panel {
         border-radius: var(--radius-lg);
         overflow: hidden;
         background-color: var(--color-bg-white);
         box-shadow: var(--shadow-sm);
         flex: 1;
-        min-width: 10%;
+        min-width: 0;
         position: relative;
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -421,7 +478,8 @@
         background-color: var(--color-border-lighter);
         position: relative;
         z-index: var(--z-resizer);
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -438,7 +496,8 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           border-bottom-color var(--transition-theme);
       }
 
@@ -463,7 +522,8 @@
         unicode-bidi: plaintext;
         background-color: var(--color-bg-code);
         color: var(--color-text);
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -481,7 +541,8 @@
         padding: var(--spacing-md) var(--spacing-lg);
         overflow-y: auto;
         line-height: 1.7;
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -501,7 +562,8 @@
         margin-bottom: 1rem;
         color: var(--color-heading);
         font-weight: 600;
-        transition: color var(--transition-theme),
+        transition:
+          color var(--transition-theme),
           border-bottom-color var(--transition-theme);
       }
 
@@ -592,7 +654,8 @@
         border-radius: var(--radius-sm);
         font-family: var(--font-mono);
         font-size: 0.9em;
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -673,7 +736,8 @@
         align-items: center;
         margin-top: var(--spacing-lg);
         border-radius: var(--spacing-xs);
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme),
           border-top-color var(--transition-theme);
       }
@@ -723,6 +787,19 @@
           min-height: 300px;
         }
 
+        #editor-panel {
+          min-height: 0 !important;
+          flex: 0 0 auto !important;
+          height: auto !important;
+          max-width: 100% !important;
+          overflow: hidden;
+          opacity: 1 !important;
+          transform: translateY(0);
+          transition:
+            max-height 180ms ease,
+            transform 180ms ease;
+        }
+
         .panel-content {
           height: calc(100% - 40px);
         }
@@ -737,6 +814,21 @@
 
         #preview {
           padding: var(--spacing-md) var(--spacing-md);
+          min-height: calc(70vh - 110px);
+        }
+
+        .editor-container.read-mode #editor-panel {
+          flex: 0 0 auto !important;
+          height: 0 !important;
+          max-height: none !important;
+          max-width: 100% !important;
+          margin: 0;
+          opacity: 1 !important;
+          transform: translateY(100%) !important;
+        }
+
+        .editor-container.read-mode #preview-panel {
+          height: auto !important;
           min-height: calc(70vh - 110px);
         }
       }
@@ -875,7 +967,8 @@
         margin-bottom: var(--spacing-lg);
         box-shadow: var(--shadow-sm);
         overflow: hidden;
-        transition: all var(--transition-normal),
+        transition:
+          all var(--transition-normal),
           background-color var(--transition-theme);
       }
 
@@ -970,7 +1063,8 @@
         border-radius: var(--radius-lg);
         padding: var(--spacing-md);
         cursor: pointer;
-        transition: all var(--transition-fast),
+        transition:
+          all var(--transition-fast),
           background-color var(--transition-theme),
           color var(--transition-theme);
       }
@@ -1024,7 +1118,8 @@
         justify-content: center;
         background-color: var(--color-bg-white);
         flex-shrink: 0;
-        transition: all var(--transition-fast),
+        transition:
+          all var(--transition-fast),
           background-color var(--transition-theme),
           color var(--transition-theme);
       }
@@ -1083,6 +1178,7 @@
 
       /* Panel action buttons */
       #btn-copy-markdown,
+      #btn-read-mode,
       #btn-save-markdown,
       #btn-export-pdf {
         background: var(--color-btn-bg);
@@ -1099,7 +1195,18 @@
         font-weight: 500;
       }
 
+      #btn-read-mode {
+        background: transparent;
+        color: var(--color-text-light);
+      }
+
+      #btn-read-mode.active {
+        background: var(--color-btn-bg-hover);
+        color: var(--color-text);
+      }
+
       #btn-copy-markdown:hover,
+      #btn-read-mode:hover,
       #btn-save-markdown:hover,
       #btn-export-pdf:hover {
         background: var(--color-btn-bg-hover);
@@ -1113,7 +1220,8 @@
         min-height: 51px;
         max-height: 51px;
         overflow: hidden;
-        transition: background-color var(--transition-theme),
+        transition:
+          background-color var(--transition-theme),
           color var(--transition-theme);
       }
 
@@ -1217,6 +1325,7 @@
       }
 
       .theme-dark #btn-copy-markdown,
+      .theme-dark #btn-read-mode,
       .theme-dark #btn-save-markdown,
       .theme-dark #btn-export-pdf,
       .theme-dark .autosave-toggle-btn,
@@ -1226,11 +1335,22 @@
       }
 
       .theme-dark #btn-copy-markdown:hover,
+      .theme-dark #btn-read-mode:hover,
       .theme-dark #btn-save-markdown:hover,
       .theme-dark #btn-export-pdf:hover,
       .theme-dark .autosave-toggle-btn:hover,
       .theme-dark .manual-save-btn-split:hover {
         background: var(--color-dark-btn-bg-hover);
+      }
+
+      .theme-dark #btn-read-mode {
+        background: transparent;
+        color: var(--color-dark-text-light);
+      }
+
+      .theme-dark #btn-read-mode.active {
+        background: var(--color-dark-btn-bg-hover);
+        color: var(--color-dark-text);
       }
 
       .theme-dark .doc-preview {
@@ -1298,6 +1418,7 @@
       }
 
       .icon-svg svg {
+        display: block;
         width: 100%;
         height: 100%;
         fill: currentColor;
@@ -1535,8 +1656,10 @@
         border: 1px solid var(--color-border-light);
         box-shadow: var(--shadow-md);
         z-index: 5000;
-        transition: transform var(--transition-fast),
-          opacity var(--transition-fast), visibility var(--transition-fast);
+        transition:
+          transform var(--transition-fast),
+          opacity var(--transition-fast),
+          visibility var(--transition-fast);
         transform: translateY(-3px);
         opacity: 0;
         max-width: min(430px, calc(100vw - 12px));
@@ -1576,8 +1699,9 @@
         color: var(--color-text);
         direction: ltr;
         unicode-bidi: plaintext;
-        font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas,
-          "Liberation Mono", monospace;
+        font-family:
+          ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
+          monospace;
         font-weight: 200;
         letter-spacing: -0.034em;
         white-space: nowrap;
@@ -1618,7 +1742,8 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: background var(--transition-normal),
+        transition:
+          background var(--transition-normal),
           transform var(--transition-normal);
       }
 
@@ -1875,6 +2000,7 @@
         THEME: "mdp_darkTheme",
         EDITOR_WIDTH: "mdp_editorWidth",
         PREVIEW_WIDTH: "mdp_previewWidth",
+        READ_MODE: "mdp_readMode",
       };
 
       const ICONS = {
@@ -2084,6 +2210,18 @@
             stroke="currentColor"
             stroke-width="2"
             stroke-linecap="round"
+          />
+        </symbol>
+
+        <!-- Fullscreen Icon -->
+        <symbol id="icon-fullscreen" viewBox="0 0 24 24">
+          <path
+            d="M8 3H3v5M16 3h5v5M8 21H3v-5M21 16v5h-5"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
           />
         </symbol>
 
@@ -2483,6 +2621,11 @@
           <div class="panel-header">
             <div>Preview</div>
             <div class="panel-controls">
+              <button id="btn-read-mode" title="Read mode">
+                <span class="icon-svg"
+                  ><svg><use href="#icon-fullscreen" /></svg
+                ></span>
+              </button>
               <button id="btn-save-markdown" title="Save as file">
                 <span class="icon-svg"
                   ><svg><use href="#icon-download" /></svg
@@ -2548,18 +2691,19 @@
         const btnCopyMarkdown = document.getElementById("btn-copy-markdown");
         const btnSaveMarkdown = document.getElementById("btn-save-markdown");
         const btnExportPdf = document.getElementById("btn-export-pdf");
+        const btnReadMode = document.getElementById("btn-read-mode");
         const btnToggleDocsHeader = document.getElementById(
-          "btn-toggle-docs-header"
+          "btn-toggle-docs-header",
         );
         const documentsBar = document.getElementById("documents-bar");
         const currentDocNumberHeader = document.getElementById(
-          "current-doc-number-header"
+          "current-doc-number-header",
         );
         const autosaveStatusHeader = document.getElementById(
-          "autosave-status-header"
+          "autosave-status-header",
         );
         const autosaveToggleHeader = document.getElementById(
-          "autosave-toggle-header"
+          "autosave-toggle-header",
         );
         const manualSaveSplit = document.getElementById("manual-save-split");
         const miniModal = document.getElementById("mini-modal");
@@ -2643,7 +2787,7 @@
 
         function showConfirm(
           message,
-          { title = "", confirmText = "OK", cancelText = "Cancel" } = {}
+          { title = "", confirmText = "OK", cancelText = "Cancel" } = {},
         ) {
           return showModal({
             message,
@@ -2705,10 +2849,10 @@
         // ========================================
         function initPanelSizes() {
           const savedEditorWidth = localStorage.getItem(
-            STORAGE_KEYS.EDITOR_WIDTH
+            STORAGE_KEYS.EDITOR_WIDTH,
           );
           const savedPreviewWidth = localStorage.getItem(
-            STORAGE_KEYS.PREVIEW_WIDTH
+            STORAGE_KEYS.PREVIEW_WIDTH,
           );
 
           if (savedEditorWidth && savedPreviewWidth) {
@@ -2728,13 +2872,17 @@
           const resizer = document.getElementById("resizer");
           const editorPanel = document.getElementById("editor-panel");
           const previewPanel = document.getElementById("preview-panel");
+          const editorContainer = document.querySelector(".editor-container");
 
           let isResizing = false;
           let initialX, initialEditorFlex, initialPreviewFlex;
 
           resizer.addEventListener("mousedown", function (e) {
+            e.preventDefault();
             isResizing = true;
             resizer.classList.add("active");
+            document.body.classList.add("is-resizing");
+            editorContainer?.classList.add("is-resizing");
 
             initialX = e.clientX;
             // Get the flex property directly instead of flexGrow for better cross-browser compatibility
@@ -2747,10 +2895,24 @@
 
             document.addEventListener("mousemove", resize);
             document.addEventListener("mouseup", stopResize);
+            window.addEventListener("mouseup", stopResize);
+            window.addEventListener("blur", stopResize);
           });
 
           function resize(e) {
             if (!isResizing) return;
+            e.preventDefault();
+
+            // Drag right from read mode to restore split mode.
+            if (isReadMode && e.clientX - initialX > 2) {
+              setReadMode(false);
+              initialX = e.clientX;
+              const editorFlex = getComputedStyle(editorPanel).flex;
+              const previewFlex = getComputedStyle(previewPanel).flex;
+              initialEditorFlex = parseFloat(editorFlex.split(" ")[0] || "1");
+              initialPreviewFlex = parseFloat(previewFlex.split(" ")[0] || "1");
+              return;
+            }
 
             const deltaX = e.clientX - initialX;
             const containerWidth =
@@ -2760,8 +2922,8 @@
             const totalFlex = initialEditorFlex + initialPreviewFlex;
             const flexDelta = percentageDelta * totalFlex;
 
-            let newEditorFlex = Math.max(0.1, initialEditorFlex + flexDelta);
-            let newPreviewFlex = Math.max(0.1, initialPreviewFlex - flexDelta);
+            let newEditorFlex = Math.max(0.05, initialEditorFlex + flexDelta);
+            let newPreviewFlex = Math.max(0.2, initialPreviewFlex - flexDelta);
 
             // Auto-snap to center when close to 50/50 split
             const centerThreshold = 0.03; // Snap when within 3% of center
@@ -2773,6 +2935,12 @@
               newPreviewFlex = 1;
             }
 
+            // Drag left near collapsed threshold to enter read mode.
+            if (!isReadMode && deltaX < -24 && newEditorFlex <= 0.06) {
+              setReadMode(true);
+              return;
+            }
+
             editorPanel.style.flex = newEditorFlex;
             previewPanel.style.flex = newPreviewFlex;
 
@@ -2782,12 +2950,27 @@
           }
 
           function stopResize() {
+            if (!isResizing) return;
             isResizing = false;
             resizer.classList.remove("active");
+            document.body.classList.remove("is-resizing");
+            editorContainer?.classList.remove("is-resizing");
 
             document.removeEventListener("mousemove", resize);
             document.removeEventListener("mouseup", stopResize);
+            window.removeEventListener("mouseup", stopResize);
+            window.removeEventListener("blur", stopResize);
           }
+
+          // Quick reset to centered split view and exit read mode.
+          resizer.addEventListener("dblclick", function (e) {
+            e.preventDefault();
+            setReadMode(false);
+            editorPanel.style.flex = "1";
+            previewPanel.style.flex = "1";
+            localStorage.setItem(STORAGE_KEYS.EDITOR_WIDTH, "1");
+            localStorage.setItem(STORAGE_KEYS.PREVIEW_WIDTH, "1");
+          });
 
           // Handle window resize
           window.addEventListener("resize", function () {
@@ -2797,6 +2980,8 @@
             previewPanel.style.flex =
               localStorage.getItem(STORAGE_KEYS.PREVIEW_WIDTH) || 1;
           });
+
+          window.addEventListener("blur", stopResize);
         }
 
         // ========================================
@@ -2845,7 +3030,7 @@
           // Check if entire lists are RTL
           element.querySelectorAll("ul, ol").forEach((list) => {
             const allItemsRTL = Array.from(list.children).every(
-              (li) => li.tagName === "LI" && isRTL(li.textContent)
+              (li) => li.tagName === "LI" && isRTL(li.textContent),
             );
             if (allItemsRTL) {
               list.classList.add("rtl-text");
@@ -2891,6 +3076,75 @@
         let addDocBtn = null; // Reference to the add document button
         let isSharedViewMode = false; // Track if we're in shared view mode
         let sharedContent = null; // Store shared content temporarily
+        let isReadMode = false;
+
+        function parseShareHash() {
+          const hash = window.location.hash || "";
+          if (!hash.startsWith("#s="))
+            return { compressed: null, readMode: null };
+
+          const payload = hash.substring(3);
+          const ampIndex = payload.indexOf("&");
+          const compressed =
+            ampIndex >= 0 ? payload.substring(0, ampIndex) : payload;
+          const tail = ampIndex >= 0 ? payload.substring(ampIndex + 1) : "";
+          const params = new URLSearchParams(tail);
+          const readModeRaw = params.get("read_mode");
+          const readMode =
+            readModeRaw === null
+              ? null
+              : readModeRaw === "" ||
+                readModeRaw === "1" ||
+                readModeRaw.toLowerCase() === "true";
+
+          return { compressed, readMode };
+        }
+
+        function isReadModeFromUrl() {
+          return parseShareHash().readMode;
+        }
+
+        function buildAppUrl({ sharedCompressed = null } = {}) {
+          const url = new URL(window.location.href);
+
+          if (sharedCompressed) {
+            url.hash = isReadMode
+              ? `s=${sharedCompressed}&read_mode=1`
+              : `s=${sharedCompressed}`;
+          } else if (url.hash.startsWith("#s=")) {
+            url.hash = "";
+          }
+
+          return url.toString();
+        }
+
+        function applyReadModeToUI() {
+          const editorContainer = document.querySelector(".editor-container");
+          if (!editorContainer) return;
+          editorContainer.classList.toggle("read-mode", isReadMode);
+          if (btnReadMode) {
+            btnReadMode.classList.toggle("active", isReadMode);
+            btnReadMode.setAttribute(
+              "title",
+              isReadMode ? "Exit read mode" : "Read mode",
+            );
+          }
+        }
+
+        function setReadMode(nextMode, { persist = true } = {}) {
+          isReadMode = !!nextMode;
+          // Ensure transitions are not accidentally left disabled after drag.
+          document.body.classList.remove("is-resizing");
+          document
+            .querySelector(".editor-container")
+            ?.classList.remove("is-resizing");
+          document.getElementById("resizer")?.classList.remove("active");
+          applyReadModeToUI();
+
+          if (persist) {
+            localStorage.setItem(STORAGE_KEYS.READ_MODE, String(isReadMode));
+          }
+        }
 
         // ========================================
         // STORAGE HELPER FUNCTIONS
@@ -2971,7 +3225,7 @@
           };
           localStorage.setItem(
             STORAGE_KEYS.DOCUMENT(docId),
-            JSON.stringify(data)
+            JSON.stringify(data),
           );
           updateDocumentDisplay(docId);
 
@@ -2989,7 +3243,7 @@
         function setAutosaveEnabled(docId, enabled) {
           localStorage.setItem(
             STORAGE_KEYS.AUTOSAVE(docId),
-            enabled.toString()
+            enabled.toString(),
           );
           updateCurrentDocIndicator();
         }
@@ -3103,7 +3357,7 @@
               {
                 confirmText: "Switch without saving",
                 cancelText: "Cancel",
-              }
+              },
             ).then((switchWithoutSaving) => {
               if (switchWithoutSaving) {
                 exitSharedViewMode();
@@ -3119,7 +3373,7 @@
           currentDocumentId = docId;
           localStorage.setItem(
             STORAGE_KEYS.CURRENT_DOC_ID,
-            currentDocumentId.toString()
+            currentDocumentId.toString(),
           );
           const docData = loadDocument(docId);
           markdownEditor.value = docData.content;
@@ -3173,7 +3427,7 @@
               // Insert after the last visible document
               lastVisibleCard.parentNode.insertBefore(
                 addDocBtn,
-                lastVisibleCard.nextSibling
+                lastVisibleCard.nextSibling,
               );
             }
           }
@@ -3183,7 +3437,7 @@
           // Prevent removal of Document 1
           if (docId === 1) {
             showToast(
-              "Document 1 cannot be removed. It serves as the primary document."
+              "Document 1 cannot be removed. It serves as the primary document.",
             );
             return;
           }
@@ -3216,7 +3470,7 @@
             // Show confirmation for non-empty documents
             showConfirm(
               `Delete document ${docId}?\n\nThis will permanently delete all its content.`,
-              { confirmText: "Delete", cancelText: "Cancel" }
+              { confirmText: "Delete", cancelText: "Cancel" },
             ).then((proceed) => {
               if (!proceed) return;
               // Clear the document data from localStorage
@@ -3254,7 +3508,7 @@
             // Save the updated visible documents state
             localStorage.setItem(
               STORAGE_KEYS.VISIBLE_DOCS,
-              JSON.stringify(visibleDocuments)
+              JSON.stringify(visibleDocuments),
             );
             // Update delete button states for all documents
             for (let i = 1; i <= CONFIG.MAX_DOCUMENTS; i++) {
@@ -3273,7 +3527,7 @@
             // Save the updated visible documents state
             localStorage.setItem(
               STORAGE_KEYS.VISIBLE_DOCS,
-              JSON.stringify(visibleDocuments)
+              JSON.stringify(visibleDocuments),
             );
             // Update delete button states for all documents
             for (let i = 1; i <= CONFIG.MAX_DOCUMENTS; i++) {
@@ -3311,7 +3565,7 @@
           // Save state
           localStorage.setItem(
             STORAGE_KEYS.DOCS_COLLAPSED,
-            isCollapsed.toString()
+            isCollapsed.toString(),
           );
         }
 
@@ -3341,7 +3595,7 @@
           }
 
           const compressed = compressContent(content);
-          const url = `${window.location.href.split("#")[0]}#s=${compressed}`;
+          const url = buildAppUrl({ sharedCompressed: compressed });
 
           return { url, length: url.length };
         }
@@ -3377,25 +3631,27 @@
           document.body.classList.remove("has-shared-banner");
 
           // Clear fragment from current URL
-          history.replaceState(null, "", window.location.pathname);
+          history.replaceState(history.state, "", buildAppUrl());
 
           // Update header
           updateCurrentDocIndicator();
         }
 
         function checkForSharedContent() {
-          const hash = window.location.hash;
-          if (hash.startsWith("#s=")) {
-            const compressed = hash.substring(3); // Remove '#s='
+          const { compressed, readMode } = parseShareHash();
+          if (compressed) {
             const payload = decompressContent(compressed);
 
             if (payload && payload.content) {
+              if (readMode !== null) {
+                setReadMode(readMode, { persist: true });
+              }
               enterSharedViewMode(payload.content, payload.ts);
               return true;
             } else {
               // Invalid or corrupted data
               showToast(
-                "Failed to load shared content. The link may be corrupted or invalid."
+                "Failed to load shared content. The link may be corrupted or invalid.",
               );
               history.replaceState(null, "", window.location.pathname);
             }
@@ -3442,7 +3698,7 @@
           // If still no slot available, warn user
           if (!targetDocId) {
             showToast(
-              `All ${CONFIG.MAX_DOCUMENTS} document slots are occupied. Please remove or clear a document first.`
+              `All ${CONFIG.MAX_DOCUMENTS} document slots are occupied. Please remove or clear a document first.`,
             );
             return;
           }
@@ -3469,7 +3725,7 @@
         function initializeDocumentSystem() {
           // Load saved visible documents
           const savedVisibleDocs = localStorage.getItem(
-            STORAGE_KEYS.VISIBLE_DOCS
+            STORAGE_KEYS.VISIBLE_DOCS,
           );
           if (savedVisibleDocs) {
             try {
@@ -3502,7 +3758,7 @@
 
           // Load collapsed state (default to collapsed)
           const docsCollapsed = localStorage.getItem(
-            STORAGE_KEYS.DOCS_COLLAPSED
+            STORAGE_KEYS.DOCS_COLLAPSED,
           );
           if (docsCollapsed === null || docsCollapsed === "true") {
             documentsBar.classList.add("collapsed");
@@ -3583,9 +3839,7 @@
               const content = markdownEditor.value;
               if (content.trim()) {
                 const compressed = compressContent(content);
-                const newUrl = `${
-                  window.location.href.split("#")[0]
-                }#s=${compressed}`;
+                const newUrl = buildAppUrl({ sharedCompressed: compressed });
                 history.replaceState(null, "", newUrl);
               }
             } else if (isAutosaveEnabled(currentDocumentId)) {
@@ -3751,7 +4005,7 @@
             const handle = await window.showSaveFilePicker(opts);
             const writable = await handle.createWritable();
             await writable.write(
-              new Blob([content], { type: "text/markdown;charset=utf-8" })
+              new Blob([content], { type: "text/markdown;charset=utf-8" }),
             );
             await writable.close();
             return true;
@@ -3860,7 +4114,7 @@
           // Show/hide warning based on URL length
           const warningEl = document.getElementById("share-tooltip-warning");
           const warningTextEl = warningEl?.querySelector(
-            ".share-tooltip-warning-text"
+            ".share-tooltip-warning-text",
           );
 
           if (url.length > 1800 && warningEl && warningTextEl) {
@@ -3943,7 +4197,7 @@
             } catch (err) {
               if (!(err && err.name === "AbortError")) {
                 showToast(
-                  "Sharing was not completed. You can copy the link instead."
+                  "Sharing was not completed. You can copy the link instead.",
                 );
               }
             }
@@ -3966,9 +4220,15 @@
           }
         });
 
+        if (btnReadMode) {
+          btnReadMode.addEventListener("click", function () {
+            setReadMode(!isReadMode);
+          });
+        }
+
         // Banner save button
         const btnSaveFromBanner = document.getElementById(
-          "btn-save-from-banner"
+          "btn-save-from-banner",
         );
         btnSaveFromBanner.addEventListener("click", function () {
           saveToAvailableSlot();
@@ -3998,6 +4258,19 @@
         // Initialize panel sizes and resizer
         initPanelSizes();
         setupResizer();
+
+        // Initialize read mode (shared hash read_mode has precedence over local storage)
+        const readModeFromUrl = isReadModeFromUrl();
+        const readModeFromStorage = localStorage.getItem(
+          STORAGE_KEYS.READ_MODE,
+        );
+        const initialReadMode =
+          readModeFromUrl !== null
+            ? readModeFromUrl
+            : readModeFromStorage === "true";
+        setReadMode(initialReadMode, {
+          persist: true,
+        });
 
         // Check for shared content BEFORE initializing documents
         const hasSharedContent = checkForSharedContent();
@@ -4030,6 +4303,14 @@
             return;
           }
 
+          // Read mode toggle
+          if (key === STORAGE_KEYS.READ_MODE) {
+            setReadMode(newValue === "true", {
+              persist: false,
+            });
+            return;
+          }
+
           // Panel sizes
           if (
             key === STORAGE_KEYS.EDITOR_WIDTH ||
@@ -4038,10 +4319,10 @@
             const editorPanel = document.getElementById("editor-panel");
             const previewPanel = document.getElementById("preview-panel");
             const savedEditorWidth = localStorage.getItem(
-              STORAGE_KEYS.EDITOR_WIDTH
+              STORAGE_KEYS.EDITOR_WIDTH,
             );
             const savedPreviewWidth = localStorage.getItem(
-              STORAGE_KEYS.PREVIEW_WIDTH
+              STORAGE_KEYS.PREVIEW_WIDTH,
             );
             if (savedEditorWidth) editorPanel.style.flex = savedEditorWidth;
             if (savedPreviewWidth) previewPanel.style.flex = savedPreviewWidth;
@@ -4101,14 +4382,26 @@
 
         // Listen for navigation events to handle back/forward button for shared URLs
         window.addEventListener("popstate", function (event) {
+          const readModeFromUrl = isReadModeFromUrl();
+          const readModeFromStorage =
+            localStorage.getItem(STORAGE_KEYS.READ_MODE) === "true";
+          if (readModeFromUrl !== null) {
+            setReadMode(readModeFromUrl, { persist: true });
+          } else {
+            setReadMode(readModeFromStorage, { persist: true });
+          }
+
           const hash = window.location.hash;
           if (hash.startsWith("#s=")) {
             // User navigated back to a shared URL
-            const compressed = hash.substring(3);
+            const { compressed, readMode } = parseShareHash();
             const payload = decompressContent(compressed);
 
             if (payload && payload.content) {
               // Enter shared view mode
+              if (readMode !== null) {
+                setReadMode(readMode, { persist: true });
+              }
               enterSharedViewMode(payload.content, payload.ts);
             }
           } else if (isSharedViewMode && !event.state?.sharedView) {
